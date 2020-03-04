@@ -2,23 +2,56 @@ import {
   GraphQLServer
 } from "graphql-yoga";
 
+const posts =[{
+  id:'0',
+  title:'First post title',
+  body:'First post body',
+  published: true
+}, {
+  id:'1',
+  title:'Second post title',
+  body:'Second post body',
+  published: true
+}, {
+  id:'2',
+  title:'Third post title',
+  body:'Third post body',
+  published: false
+}]
+
+
+//Demo user data
+const users = [{
+  id:'1',
+  name: 'Enrico',
+  email: 'enrico@example.com',
+  age: 27
+}, {
+  id: '2',
+  name: 'Sara',
+  email: 'sara@email.com'
+}, {
+  id: '3',
+  name: 'Matt',
+  email: 'matt@email.com'
+}]
+
 //type definitions(schema)
 const typeDefs = `
     type Query {
-      greeting(name: String, location: String): String!
-      add(numbers: [Float!]!): Float!
-      grades: [Int]!
-      aUser: User!
+      posts(query: String): [Post!]!
+      users(query: String): [User!]!
+      myTestUser: User!
       post: Post!
-
     } 
 
     type User {
         id: ID!
         name: String!
-        age: Int!
+        age: Int
         employed: Boolean!
         gpa: Float
+        email: String!
     }
 
     type Post {
@@ -32,25 +65,25 @@ const typeDefs = `
 //resolvers
 const resolvers = {
   Query: {
-    greeting(parent, args, ctx, info) { //args -> operation arguments which we need, ctx -> context: useful for contextual data, info -> informations about actual operations
-      if (args.name && args.location) {
-        return `Hello, ${args.name}!. You are from ${args.location}`
-      } else {
-        return "Hello"
+    users(parent, args, ctx, info){
+      if (!args.query){
+      return users        
       }
+
+      return users.filter((users) => {
+        return users.name.toLowerCase().includes(args.query.toLowerCase())
+      })
     },
-    add(parent, args, ctx, info) { //parent has to be provided, otherwise args will be treated as parent
-      if (args.numbers.length === 0){
-        return 0
+    posts(parent, args, ctx, info){
+      if(!args.query){
+        return posts
       }
-      return args.numbers.reduce((accumulator, currentValue)  => {
-        return accumulator + currentValue
-        })
+
+      return posts.filter((posts) => {
+        return posts.title.toLowerCase().includes(args.query.toLowerCase())
+      })
     },
-    grades(parent, args, cts, info) {
-      return [99, 199, 100]
-    },
-    aUser() {
+    myTestUser() {
       return {
         id: "abc123",
         name: "Enrico",
@@ -77,5 +110,5 @@ const server = new GraphQLServer({
 });
 
 server.start(() => {
-  console.log("The server is up!");
+  console.log("The Mock Server is Online!");
 });
