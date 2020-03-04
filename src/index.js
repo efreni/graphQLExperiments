@@ -2,27 +2,30 @@ import {
   GraphQLServer
 } from "graphql-yoga";
 
-const posts =[{
-  id:'0',
-  title:'First post title',
-  body:'First post body',
-  published: true
+const posts = [{
+  id: '0',
+  title: 'First post title',
+  body: 'First post body',
+  published: true,
+  author: '1'
 }, {
-  id:'1',
-  title:'Second post title',
-  body:'Second post body',
-  published: true
+  id: '1',
+  title: 'Second post title',
+  body: 'Second post body',
+  published: true,
+  author: '2'
 }, {
-  id:'2',
-  title:'Third post title',
-  body:'Third post body',
-  published: false
+  id: '2',
+  title: 'Third post title',
+  body: 'Third post body',
+  published: false,
+  author: '3'
 }]
 
 
 //Demo user data
 const users = [{
-  id:'1',
+  id: '1',
   name: 'Enrico',
   email: 'enrico@example.com',
   age: 27
@@ -59,23 +62,24 @@ const typeDefs = `
       title: String!
       body: String!
       published: Boolean!
+      author: User!
     }
     `
 
 //resolvers
 const resolvers = {
   Query: {
-    users(parent, args, ctx, info){
-      if (!args.query){
-      return users        
+    users(parent, args, ctx, info) {
+      if (!args.query) {
+        return users
       }
 
       return users.filter((users) => {
         return users.name.toLowerCase().includes(args.query.toLowerCase())
       })
     },
-    posts(parent, args, ctx, info){
-      if(!args.query){
+    posts(parent, args, ctx, info) {
+      if (!args.query) {
         return posts
       }
 
@@ -99,8 +103,16 @@ const resolvers = {
         body: "postBody",
         published: false
       }
-    },
+    }
 
+  },
+  Post: {
+    author(parent, args, ctx, info) {
+      return users.find((user) => {
+        return user.id === parent.author
+      })
+
+    }
   }
 }
 
