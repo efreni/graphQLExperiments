@@ -1,62 +1,70 @@
-import { GraphQLServer } from "graphql-yoga";
-
-// 5 Scalar types = String, Boolean, Int, Float, ID
-// scalar type means that cointains a single value type (differently from an object for ex)
+import {
+  GraphQLServer
+} from "graphql-yoga";
 
 //type definitions(schema)
 const typeDefs = `
     type Query {
+      greeting(name: String, location: String): String!
+      aUser: User!
+      post: Post!
+      add(a: Float!, b: Float!): Float!
+
+    } 
+
+    type User {
         id: ID!
         name: String!
         age: Int!
         employed: Boolean!
         gpa: Float
-        title: String!
-        price: Int!
-        releaseYear: Int
-        rating: Int
-        inStock: Boolean!
-    } 
-    `; //! <- means it has to return always a value of that type, otherwise can be null
+    }
+
+    type Post {
+      id: ID!
+      title: String!
+      body: String!
+      published: Boolean!
+    }
+
+
+    `;
 
 //resolvers
 const resolvers = {
   Query: {
-    id() {
-      return "abc123";
+    greeting(parent, args, ctx, info){ //args -> operation arguments which we need, ctx -> context: useful for contextual data, info -> informations about actual operations
+      if(args.name && args.location) {
+        return `Hello, ${args.name}!. You are from ${args.location}`
+      } else {
+        return "Hello"
+      }
     },
-    name() {
-      return "Enrico";
+    aUser() {
+      return {
+        id: "abc123",
+        name: "Enrico",
+        age: 33,
+        employed: true,
+        gpa: null
+      }
     },
-    age() {
-      return 33;
+    post(){
+      return {
+        id: "idDelPost123",
+        title: "titoloDelPost",
+        body: "postBody", 
+        published: false
+      }
     },
-    employed() {
-      return true;
-    },
-    gpa() {
-      return null;
-    },
-    title() {
-      return "An Item Name";
-    },
-    price() {
-      return 100;
-    },
-    releaseYear() {
-      return null;
-    },
-    rating() {
-      return null;
-    },
-    inStock() {
-      return true;
+    add(parent, args){ //parent has to be provided, otherwise args will be treated as parent
+      return args.a + args.b 
     }
   }
-};
+}
 
 const server = new GraphQLServer({
-  typeDefs, // it equals to - typeDefs: typeDefs,
+  typeDefs, 
   resolvers
 });
 
