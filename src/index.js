@@ -2,28 +2,49 @@ import {
   GraphQLServer
 } from "graphql-yoga";
 
-const posts = [{
+//Demo user data
+const comments = [{
   id: '0',
+  text: "First Comment",
+  author: "3",
+  post: '10'
+}, {
+  id: '1',
+  text: "Second Comment",
+  author: "2",
+  post: '11'
+}, {
+  id: '2',
+  text: "Third Comment",
+  author: "1",
+  post: '12'
+}, {
+  id: '3',
+  text: "Forth Comment",
+  author: "2",
+  post: '10'
+}]
+
+const posts = [{
+  id: '10',
   title: 'First post title',
   body: 'First post body',
   published: true,
   author: '1'
 }, {
-  id: '1',
+  id: '11',
   title: 'Second post title',
   body: 'Second post body',
   published: true,
-  author: '2'
+  author: '1'
 }, {
-  id: '2',
+  id: '12',
   title: 'Third post title',
   body: 'Third post body',
   published: false,
   author: '3'
 }]
 
-
-//Demo user data
 const users = [{
   id: '1',
   name: 'Enrico',
@@ -41,29 +62,36 @@ const users = [{
 
 //type definitions(schema)
 const typeDefs = `
-    type Query {
-      posts(query: String): [Post!]!
-      users(query: String): [User!]!
-      myTestUser: User!
-      post: Post!
-    } 
+  type Query {
+    posts(query: String): [Post!]!
+    users(query: String): [User!]!
+    comments: [Comment!]!
+  } 
 
-    type User {
-        id: ID!
-        name: String!
-        age: Int
-        employed: Boolean!
-        gpa: Float
-        email: String!
-    }
+  type User {
+    id: ID!
+    name: String!
+    age: Int
+    email: String!
+    posts: [Post!]!
+    comments: [Comment!]!
+  }
 
-    type Post {
-      id: ID!
-      title: String!
-      body: String!
-      published: Boolean!
-      author: User!
-    }
+  type Post {
+    id: ID!
+    title: String!
+    body: String!
+    published: Boolean!
+    author: User!
+    comments: [Comment!]!
+  }
+
+  type Comment {
+    id: ID!
+    text: String!
+    author: User!
+    post: Post!
+  }
     `
 
 //resolvers
@@ -87,29 +115,46 @@ const resolvers = {
         return posts.title.toLowerCase().includes(args.query.toLowerCase())
       })
     },
-    myTestUser() {
-      return {
-        id: "abc123",
-        name: "Enrico",
-        age: 33,
-        employed: true,
-        gpa: null
-      }
-    },
-    post() {
-      return {
-        id: "idDelPost123",
-        title: "titoloDelPost",
-        body: "postBody",
-        published: false
+    comments(parent, args, ctx, info) {
+      if (!args.query) {
+        return comments
       }
     }
-
   },
   Post: {
     author(parent, args, ctx, info) {
       return users.find((user) => {
         return user.id === parent.author
+      })
+    },
+    comments(parent, args, ctx, info) {
+      return comments.filter((comment) =>{
+        return comment.post === parent.id
+      })
+    }
+  },
+  User: {
+    posts(parent, args, ctx, info) {
+      return posts.filter((post) => {
+        return post.author == parent.id
+      })
+
+    },
+    comments(parent, args, ctx, info) {
+      return comments.filter((comment) => {
+        return comment.author === parent.id
+      })
+    }
+  },
+  Comment: {
+    author(parent, args, ctx, info) {
+      return users.find((user) => {
+        return user.id === parent.author
+      })
+    },
+    post(parent, args, ctx, info) {
+      return posts.find((post) => {
+        return post.id === parent.post
       })
 
     }
