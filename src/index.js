@@ -1,66 +1,77 @@
-import {
-  GraphQLServer
-} from "graphql-yoga";
+import { GraphQLServer } from "graphql-yoga";
 
-import uuidv4 from "uuid/v4"
+import uuidv4 from "uuid/v4";
 
 //Demo user data
-const comments = [{
-  id: '0',
-  text: "First Comment",
-  author: "3",
-  post: '10'
-}, {
-  id: '1',
-  text: "Second Comment",
-  author: "2",
-  post: '11'
-}, {
-  id: '2',
-  text: "Third Comment",
-  author: "1",
-  post: '12'
-}, {
-  id: '3',
-  text: "Forth Comment",
-  author: "2",
-  post: '10'
-}]
+const comments = [
+  {
+    id: "0",
+    text: "First Comment",
+    author: "3",
+    post: "10"
+  },
+  {
+    id: "1",
+    text: "Second Comment",
+    author: "2",
+    post: "11"
+  },
+  {
+    id: "2",
+    text: "Third Comment",
+    author: "1",
+    post: "12"
+  },
+  {
+    id: "3",
+    text: "Forth Comment",
+    author: "2",
+    post: "10"
+  }
+];
 
-const posts = [{
-  id: '10',
-  title: 'First post title',
-  body: 'First post body',
-  published: true,
-  author: '1'
-}, {
-  id: '11',
-  title: 'Second post title',
-  body: 'Second post body',
-  published: true,
-  author: '1'
-}, {
-  id: '12',
-  title: 'Third post title',
-  body: 'Third post body',
-  published: false,
-  author: '3'
-}]
+const posts = [
+  {
+    id: "10",
+    title: "First post title",
+    body: "First post body",
+    published: true,
+    author: "1"
+  },
+  {
+    id: "11",
+    title: "Second post title",
+    body: "Second post body",
+    published: true,
+    author: "1"
+  },
+  {
+    id: "12",
+    title: "Third post title",
+    body: "Third post body",
+    published: false,
+    author: "3"
+  }
+];
 
-const users = [{
-  id: '1',
-  name: 'Enrico',
-  email: 'enrico@example.com',
-  age: 27
-}, {
-  id: '2',
-  name: 'Sara',
-  email: 'sara@email.com'
-}, {
-  id: '3',
-  name: 'Matt',
-  email: 'matt@email.com'
-}]
+const users = [
+  {
+    id: "1",
+    name: "Enrico",
+    email: "enrico@example.com",
+    age: 27
+  },
+  {
+    id: "2",
+    name: "Sara",
+    email: "sara@email.com"
+  },
+  {
+    id: "3",
+    name: "Matt",
+    email: "matt@email.com"
+  }
+];
 
 //type definitions(schema)
 const typeDefs = `
@@ -100,145 +111,144 @@ const typeDefs = `
     author: User!
     post: Post!
   }
-    `
+    `;
 
 //resolvers
 const resolvers = {
   Query: {
     users(parent, args, ctx, info) {
       if (!args.query) {
-        return users
+        return users;
       }
 
-      return users.filter((users) => {
-        return users.name.toLowerCase().includes(args.query.toLowerCase())
-      })
+      return users.filter(users => {
+        return users.name.toLowerCase().includes(args.query.toLowerCase());
+      });
     },
     posts(parent, args, ctx, info) {
       if (!args.query) {
-        return posts
+        return posts;
       }
 
-      return posts.filter((posts) => {
-        return posts.title.toLowerCase().includes(args.query.toLowerCase())
-      })
+      return posts.filter(posts => {
+        return posts.title.toLowerCase().includes(args.query.toLowerCase());
+      });
     },
     comments(parent, args, ctx, info) {
       if (!args.query) {
-        return comments
+        return comments;
       }
     }
   },
   Post: {
     author(parent, args, ctx, info) {
-      return users.find((user) => {
-        return user.id === parent.author
-      })
+      return users.find(user => {
+        return user.id === parent.author;
+      });
     },
     comments(parent, args, ctx, info) {
-      return comments.filter((comment) => {
-        return comment.post === parent.id
-      })
+      return comments.filter(comment => {
+        return comment.post === parent.id;
+      });
     }
   },
   User: {
     posts(parent, args, ctx, info) {
-      return posts.filter((post) => {
-        return post.author == parent.id
-      })
-
+      return posts.filter(post => {
+        return post.author == parent.id;
+      });
     },
     comments(parent, args, ctx, info) {
-      return comments.filter((comment) => {
-        return comment.author === parent.id
-      })
+      return comments.filter(comment => {
+        return comment.author === parent.id;
+      });
     }
   },
   Comment: {
     author(parent, args, ctx, info) {
-      return users.find((user) => {
-        return user.id === parent.author
-      })
+      return users.find(user => {
+        return user.id === parent.author;
+      });
     },
     post(parent, args, ctx, info) {
-      return posts.find((post) => {
-        return post.id === parent.post
-      })
-
+      return posts.find(post => {
+        return post.id === parent.post;
+      });
     }
   },
   Mutation: {
     createUser(parent, args, ctx, info) {
-      const emailTaken = users.some((user) => {
-        return user.email === args.email
-      })
+      const emailTaken = users.some(user => {
+        return user.email === args.email;
+      });
       if (emailTaken) {
-        throw new Error('Email already taken')
+        throw new Error("Email already taken");
       }
+
+      const one = {
+        name: "Florence",
+        country: "Italy"
+      };
+
+      const two = {
+        population: 750000,
+        ...one
+      };
 
       const user = {
         id: uuidv4(),
-        name: args.name,
-        email: args.email,
-        age: args.age
-      }
+        ...args
+      };
 
-      users.push(user)
+      users.push(user);
 
-      return user
+      return user;
     },
     createPost(parent, args, ctx, info) {
-      const userExists = users.some((user) => {
-        return user.id === args.author
-      })
-      
-      if(!userExists){
-        throw new Error("User not found")
+      const userExists = users.some(user => {
+        return user.id === args.author;
+      });
+
+      if (!userExists) {
+        throw new Error("User not found");
       }
 
       const post = {
         id: uuidv4(),
-        title: args.title,
-        body:args.body,
-        published: args.published,
-        author: args.author
-      }
+        ...args
+      };
 
-      posts.push(post) //why am I pushing this?
-      
-      return post
-      
+      posts.push(post); //why am I pushing this?
+
+      return post;
     },
-    createComment(parent, args, ctx, info){
-      const userExists = users.some((user) => {
-        return user.id === args.author
-      })
+    createComment(parent, args, ctx, info) {
+      const userExists = users.some(user => {
+        return user.id === args.author;
+      });
 
-      const postExists = posts.some((post) => {
-        return post.id === args.post && post.published
-      })
-      
-      if(!userExists){
-        throw Error("The specified user doesn't exist")
+      const postExists = posts.some(post => {
+        return post.id === args.post && post.published;
+      });
+
+      if (!userExists) {
+        throw Error("The specified user doesn't exist");
       }
-      if(!postExists){
-        throw Error("The specified post doesn't exist")
+      if (!postExists) {
+        throw Error("The specified post doesn't exist");
       }
 
       const comment = {
         id: uuidv4(),
-        text: args.text,
-        author: args.author,
-        post: args.post
-      }
+        ...args
+      };
 
-      comments.push(comment) //why am I pushing this?
+      comments.push(comment); //why am I pushing this?
 
-      return comment
-
+      return comment;
     }
   }
-}
+};
 
 const server = new GraphQLServer({
   typeDefs,
