@@ -3,7 +3,7 @@ import { GraphQLServer } from "graphql-yoga";
 import uuidv4 from "uuid/v4";
 
 //Demo user data
-const comments = [
+let comments = [
   {
     id: "0",
     text: "First Comment",
@@ -30,7 +30,7 @@ const comments = [
   }
 ];
 
-const posts = [
+let posts = [
   {
     id: "10",
     title: "First post title",
@@ -54,7 +54,7 @@ const posts = [
   }
 ];
 
-const users = [
+let users = [
   {
     id: "1",
     name: "Enrico",
@@ -83,6 +83,7 @@ const typeDefs = `
 
   type Mutation {
     createUser(data: CreateUserInput): User!
+    deleteUser(id: ID!): User!
     createPost(data: CreatePostInput): Post!
     createComment(data: CreateCommentInput): Comment!
   } 
@@ -140,8 +141,8 @@ const resolvers = {
         return users;
       }
 
-      return users.filter(users => {
-        return users.name.toLowerCase().includes(args.query.toLowerCase());
+      return users.filter(user => {
+        return user.name.toLowerCase().includes(args.query.toLowerCase());
       });
     },
     posts(parent, args, ctx, info) {
@@ -149,8 +150,8 @@ const resolvers = {
         return posts;
       }
 
-      return posts.filter(posts => {
-        return posts.title.toLowerCase().includes(args.query.toLowerCase());
+      return posts.filter(post => {
+        return post.title.toLowerCase().includes(args.query.toLowerCase());
       });
     },
     comments(parent, args, ctx, info) {
@@ -197,9 +198,7 @@ const resolvers = {
   },
   Mutation: {
     createUser(parent, args, ctx, info) {
-      const emailTaken = users.some(user => {
-        return user.email === args.data.email;
-      });
+      const emailTaken = users.some(user => user.email === args.data.email);
       if (emailTaken) {
         throw new Error("Email already taken");
       }
@@ -213,10 +212,31 @@ const resolvers = {
 
       return user;
     },
-    createPost(parent, args, ctx, info) {
-      const userExists = users.some(user => {
-        return user.id === args.data.author;
+    deleteUser(parent, args, ctx, info) {
+      const userIndex = users.findIndex(user => user.id === args.id);
+
+      if (userIndex === -1) {
+        throw new Error("User not found");
+      }
+
+      const deletedUsers = users.splice(userIndex, 1);
+
+      posts = posts.filter(post => {
+        const match = post.author === args.id;
+
+        if (match) {
+          comments = comments.filter(comment => comment.post !== post.id);
+        }
+
+        return !match;
       });
+
+      comments = comments.filter(comment => comment.author !== args.id);
+
+      return deletedUsers[0];
+    },
+    createPost(parent, args, ctx, info) {
+      const userExists = users.some(user => user.id === args.data.author);
 
       if (!userExists) {
         throw new Error("User not found");
@@ -232,13 +252,11 @@ const resolvers = {
       return post;
     },
     createComment(parent, args, ctx, info) {
-      const userExists = users.some(user => {
-        return user.id === args.data.author;
-      });
+      const userExists = users.some(user => user.id === args.data.author);
 
-      const postExists = posts.some(post => {
-        return post.id === args.data.post && post.published;
-      });
+      const postExists = posts.some(
+        post => post.id === args.data.post && post.published
+      );
 
       if (!userExists) {
         throw Error("The specified user doesn't exist");
