@@ -7,7 +7,7 @@ let comments = [
   {
     id: "0",
     text: "First Comment",
-    author: "3",
+    author: "1",
     post: "10"
   },
   {
@@ -25,7 +25,7 @@ let comments = [
   {
     id: "3",
     text: "Forth Comment",
-    author: "2",
+    author: "1",
     post: "10"
   }
 ];
@@ -36,14 +36,14 @@ let posts = [
     title: "First post title",
     body: "First post body",
     published: true,
-    author: "1"
+    author: "3"
   },
   {
     id: "11",
     title: "Second post title",
     body: "Second post body",
     published: true,
-    author: "1"
+    author: "3"
   },
   {
     id: "12",
@@ -85,7 +85,9 @@ const typeDefs = `
     createUser(data: CreateUserInput): User!
     deleteUser(id: ID!): User!
     createPost(data: CreatePostInput): Post!
+    deletePost(id: ID!): Post!
     createComment(data: CreateCommentInput): Comment!
+    deleteComment(id: ID!): Comment!
   } 
 
   input CreateUserInput {
@@ -251,6 +253,19 @@ const resolvers = {
 
       return post;
     },
+    deletePost(Parent, args, cts, info) {
+      const postIndex = posts.findIndex(post => post.id === args.id);
+
+      if (postIndex === -1) {
+        throw new Error("Post not found");
+      }
+
+      const deletedPosts = posts.splice(postIndex, 1);
+
+      comments = comments.filter(comment => comment.post !== args.id);
+
+      return deletedPosts[0];
+    },
     createComment(parent, args, ctx, info) {
       const userExists = users.some(user => user.id === args.data.author);
 
@@ -273,6 +288,19 @@ const resolvers = {
       comments.push(comment); //why am I pushing this?
 
       return comment;
+    },
+    deleteComment(parent, args, cts, info) {
+      const commentIndex = comments.findIndex(
+        comment => comment.id === args.id
+      );
+
+      if (commentIndex === -1) {
+        throw new Error("Comment not found");
+      }
+
+      const deletedComments = comments.splice(commentIndex, 1);
+
+      return deletedComments[0];
     }
   }
 };
